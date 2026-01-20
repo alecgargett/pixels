@@ -1,2 +1,5 @@
 # pixels
-colourful interactive pixel animation
+
+A colourful-pixels interactive animation.
+
+https://alecgargett.github.io/pixels/
