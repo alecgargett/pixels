@@ -18,118 +18,67 @@
             width: 100%; height: 100%; z-index: -1; 
         }
 
-        /* 
-           MAIN UI LAYOUT 
-           This container fills the screen and organizes the Title 
-           and Controls into a vertical column.
-        */
         #ui-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            pointer-events: none; /* Let clicks pass through to canvas */
-            z-index: 10;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            pointer-events: none; z-index: 10;
         }
 
-        /* 
-           HEADER AREA
-           flex-grow: 1 makes this take up all available space 
-           between the top of the screen and the controls.
-           align-items: center vertically centers the text in this space.
-        */
         .header-area {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            min-height: 0; /* Prevents overflow issues on small screens */
+            flex-grow: 1; display: flex;
+            align-items: center; justify-content: center;
+            width: 100%; min-height: 0; 
         }
 
         h1 {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 19vw; /* 19vw fits "Pixels!" perfectly across width */
-            line-height: 1;
-            margin: 0;
+            font-size: 19vw; line-height: 1; margin: 0;
             text-align: center;
-            /* Text shadow for visibility against noise */
             text-shadow: 0px 0px 20px rgba(0,0,0,0.9);
         }
 
-        /* 
-           CONTROLS AREA
-           Placed at the bottom of the flex column.
-        */
         #controls {
-            pointer-events: auto; /* Re-enable clicking */
-            
+            pointer-events: auto;
             background-color: rgba(0, 0, 0, 0.85);
             padding: 20px; 
             border-radius: 15px; 
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
-            
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            align-items: center;
-
-            /* Responsive Width */
-            width: 90%; 
-            max-width: 350px; 
-            
-            /* Center the panel itself horizontally */
-            align-self: center;
-            margin-bottom: 20px;
-
-            /* Scrolling for small screens */
-            max-height: 60vh;
-            overflow-y: auto;
+            display: flex; flex-direction: column; 
+            gap: 12px; align-items: center;
+            width: 90%; max-width: 350px; 
+            align-self: center; margin-bottom: 20px;
+            max-height: 60vh; overflow-y: auto;
         }
         
         input[type=range] { 
-            cursor: pointer; 
-            width: 100%; 
-            display: block; 
-            margin: 0; 
-            height: 20px; 
+            cursor: pointer; width: 100%; display: block; 
+            margin: 0; height: 20px; 
         }
         
         .red-slider { accent-color: #ff4444; }
         .green-slider { accent-color: #44ff44; }
         .blue-slider { accent-color: #4444ff; }
         .speed-slider { accent-color: #888888; }
-        .bright-slider { accent-color: #ffffff; }
+        /* Brightness slider is now white/gray to represent avg intensity */
+        .bright-slider { accent-color: #cccccc; }
 
         button {
-            cursor: pointer;
-            padding: 12px 10px;
-            width: 100%;
-            border-radius: 8px;
-            border: 1px solid #ffcc00;
-            background-color: transparent;
-            color: #ffcc00;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            cursor: pointer; padding: 12px 10px; width: 100%;
+            border-radius: 8px; border: 1px solid #ffcc00;
+            background-color: transparent; color: #ffcc00;
+            font-weight: bold; font-size: 14px;
+            transition: all 0.2s; text-transform: uppercase;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
         button.active {
-            background-color: #ffcc00;
-            color: #000;
+            background-color: #ffcc00; color: #000;
             box-shadow: 0 0 10px #ffcc00;
         }
 
         #controls * { pointer-events: auto; }
-
         #controls::-webkit-scrollbar { width: 6px; }
         #controls::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 3px; }
         #controls::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
@@ -137,15 +86,11 @@
 </head>
 <body>
 
-    <!-- Flexbox UI Layer -->
     <div id="ui-layer">
-        
-        <!-- Takes up remaining top space -->
         <div class="header-area">
             <h1>Pixels!</h1>
         </div>
 
-        <!-- Sits at the bottom -->
         <div id="controls">
             <!-- Max Red -->
             <input type="range" id="rMax" class="red-slider" min="0" max="255" value="127" title="Max Red">
@@ -157,8 +102,8 @@
             <!-- Toggle Yellow Button -->
             <button id="btnYellow" class="active">Turn On Yellow (R or G is 0)</button>
 
-            <!-- Min Brightness -->
-            <input type="range" id="minBright" class="bright-slider" min="0" max="127" value="0" title="Minimum Brightness">
+            <!-- Average Brightness Bias -->
+            <input type="range" id="avgBright" class="bright-slider" min="1" max="99" value="50" title="Average Brightness">
 
             <!-- Speed -->
             <input type="range" id="speed" class="speed-slider" min="0" max="1" step="0.001" value="1" title="Speed">
@@ -176,14 +121,14 @@
                 r: document.getElementById('rMax'),
                 g: document.getElementById('gMax'),
                 b: document.getElementById('bMax'),
-                bright: document.getElementById('minBright'),
+                avg: document.getElementById('avgBright'),
                 speed: document.getElementById('speed')
             };
             const btnYellow = document.getElementById('btnYellow');
 
             // State
             let maxR = 127, maxG = 255, maxB = 255;
-            let minBrightness = 0;
+            let brightnessExponent = 1; // 1 = Linear/Normal distribution
             let noYellowMode = true; 
             let width, height, imgData, buffer, targetPixelsPerFrame = 0;
 
@@ -203,14 +148,29 @@
             }
 
             function updateSettings() {
+                // 1. Color Limits
                 maxR = parseInt(inputs.r.value);
                 maxG = parseInt(inputs.g.value);
                 maxB = parseInt(inputs.b.value);
                 
                 document.body.style.color = `rgb(${maxR}, ${maxG}, ${maxB})`;
 
-                minBrightness = parseInt(inputs.bright.value);
+                // 2. Average Brightness Calculation
+                // We map the slider (1 to 99) to an exponent.
+                // Slider = 50 -> Exponent = 1 (Linear distribution)
+                // Slider < 50 -> Exponent > 1 (Pushes values toward 0/Black)
+                // Slider > 50 -> Exponent < 1 (Pushes values toward Max/White)
                 
+                const sliderVal = parseInt(inputs.avg.value);
+                
+                // Convert 1..99 to 0.01..0.99
+                const normalized = sliderVal / 100;
+
+                // Formula: exp = (1 - u) / u
+                // if u=0.5, exp=1. if u=0.9, exp=0.11 (bright). if u=0.1, exp=9 (dark).
+                brightnessExponent = (1 - normalized) / normalized;
+
+                // 3. Speed
                 const minSpeed = 500;
                 const maxSpeed = ((width * height) / 60) * 2; 
                 targetPixelsPerFrame = minSpeed + (parseFloat(inputs.speed.value) * (maxSpeed - minSpeed));
@@ -238,31 +198,25 @@
                 for (let i = 0; i < targetPixelsPerFrame; i++) {
                     const index = (Math.random() * totalPixels) | 0;
 
-                    let r, g, b;
-                    let valid = false;
-                    let attempts = 0;
+                    // Instead of simple Math.random(), we use Math.pow(random, exponent)
+                    // This biases the probability distribution without exceeding limits.
+                    // This eliminates the need for a while() loop or rejection sampling.
+                    
+                    let rRand = Math.pow(Math.random(), brightnessExponent);
+                    let gRand = Math.pow(Math.random(), brightnessExponent);
+                    let bRand = Math.pow(Math.random(), brightnessExponent);
 
-                    // Rejection sampling
-                    while(!valid && attempts < 5) {
-                        r = (Math.random() * (maxR + 1)) | 0;
-                        g = (Math.random() * (maxG + 1)) | 0;
-                        b = (Math.random() * (maxB + 1)) | 0;
+                    let r = (rRand * (maxR + 1)) | 0;
+                    let g = (gRand * (maxG + 1)) | 0;
+                    let b = (bRand * (maxB + 1)) | 0;
 
-                        if (noYellowMode) {
-                            if (Math.random() < 0.5) r = 0;
-                            else g = 0;
-                        }
-
-                        const avgBrightness = (r + g + b) / 3;
-                        if (avgBrightness >= minBrightness) {
-                            valid = true;
-                        }
-                        attempts++;
+                    if (noYellowMode) {
+                        // "Yellow" mode logic: Zero out Red or Green
+                        if (Math.random() < 0.5) r = 0;
+                        else g = 0;
                     }
 
-                    if (valid) {
-                        buffer[index] = (255 << 24) | (b << 16) | (g << 8) | r;
-                    }
+                    buffer[index] = (255 << 24) | (b << 16) | (g << 8) | r;
                 }
 
                 ctx.putImageData(imgData, 0, 0);
