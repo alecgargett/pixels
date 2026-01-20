@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RGB Noise</title>
     <style>
         html { height: 100%; background-color: #000; }
         body {
-            margin: 0; padding: 0; width: 100%; min-height: 100%;
+            margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: transparent; color: #fff; font-family: sans-serif;
             overflow: hidden;
             transition: color 0.1s;
@@ -18,59 +18,86 @@
             width: 100%; height: 100%; z-index: -1; 
         }
 
-        /* Responsive Title Container */
-        .title-container {
-            position: absolute;
-            top: 15%;
+        /* 
+           MAIN UI LAYOUT 
+           This container fills the screen and organizes the Title 
+           and Controls into a vertical column.
+        */
+        #ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            text-align: center;
-            pointer-events: none; /* Allows clicking through text */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none; /* Let clicks pass through to canvas */
             z-index: 10;
         }
 
-        h1 {
-            /* Responsive font size: minimum 3rem, preferred 15vw, maximum 8rem */
-            font-size: clamp(3rem, 15vw, 8rem); 
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            text-shadow: 0 0 20px rgba(0,0,0,0.8);
+        /* 
+           HEADER AREA
+           flex-grow: 1 makes this take up all available space 
+           between the top of the screen and the controls.
+           align-items: center vertically centers the text in this space.
+        */
+        .header-area {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 0; /* Prevents overflow issues on small screens */
         }
 
-        /* Responsive Controls Container */
+        h1 {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 19vw; /* 19vw fits "Pixels!" perfectly across width */
+            line-height: 1;
+            margin: 0;
+            text-align: center;
+            /* Text shadow for visibility against noise */
+            text-shadow: 0px 0px 20px rgba(0,0,0,0.9);
+        }
+
+        /* 
+           CONTROLS AREA
+           Placed at the bottom of the flex column.
+        */
         #controls {
-            position: fixed; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            z-index: 100; 
+            pointer-events: auto; /* Re-enable clicking */
+            
             background-color: rgba(0, 0, 0, 0.85);
             padding: 20px; 
             border-radius: 15px; 
             border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            
             display: flex; 
             flex-direction: column; 
             gap: 12px; 
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
             align-items: center;
 
-            /* Responsive Width Logic */
+            /* Responsive Width */
             width: 90%; 
             max-width: 350px; 
-            box-sizing: border-box;
+            
+            /* Center the panel itself horizontally */
+            align-self: center;
+            margin-bottom: 20px;
 
-            /* Responsive Height Logic (for landscape phones) */
-            max-height: 70vh;
+            /* Scrolling for small screens */
+            max-height: 60vh;
             overflow-y: auto;
         }
         
-        /* Make inputs and buttons fill the container */
         input[type=range] { 
             cursor: pointer; 
             width: 100%; 
             display: block; 
             margin: 0; 
-            height: 20px; /* Taller touch target */
+            height: 20px; 
         }
         
         .red-slider { accent-color: #ff4444; }
@@ -91,7 +118,6 @@
             font-size: 14px;
             transition: all 0.2s;
             text-transform: uppercase;
-            /* Prevent text selection on mobile taps */
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
@@ -104,7 +130,6 @@
 
         #controls * { pointer-events: auto; }
 
-        /* Custom Scrollbar for the controls (Webkit) */
         #controls::-webkit-scrollbar { width: 6px; }
         #controls::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 3px; }
         #controls::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
@@ -112,26 +137,32 @@
 </head>
 <body>
 
-    <div class="title-container">
-        <h1>Pixels!</h1>
-    </div>
-
-    <div id="controls">
-        <!-- Max Red -->
-        <input type="range" id="rMax" class="red-slider" min="0" max="255" value="127" title="Max Red">
-        <!-- Max Green -->
-        <input type="range" id="gMax" class="green-slider" min="0" max="255" value="255" title="Max Green">
-        <!-- Max Blue -->
-        <input type="range" id="bMax" class="blue-slider" min="0" max="255" value="255" title="Max Blue">
+    <!-- Flexbox UI Layer -->
+    <div id="ui-layer">
         
-        <!-- Toggle Yellow Button -->
-        <button id="btnYellow" class="active">Turn On Yellow (R or G is 0)</button>
+        <!-- Takes up remaining top space -->
+        <div class="header-area">
+            <h1>Pixels!</h1>
+        </div>
 
-        <!-- Min Brightness -->
-        <input type="range" id="minBright" class="bright-slider" min="0" max="127" value="64" title="Minimum Brightness">
+        <!-- Sits at the bottom -->
+        <div id="controls">
+            <!-- Max Red -->
+            <input type="range" id="rMax" class="red-slider" min="0" max="255" value="127" title="Max Red">
+            <!-- Max Green -->
+            <input type="range" id="gMax" class="green-slider" min="0" max="255" value="255" title="Max Green">
+            <!-- Max Blue -->
+            <input type="range" id="bMax" class="blue-slider" min="0" max="255" value="255" title="Max Blue">
+            
+            <!-- Toggle Yellow Button -->
+            <button id="btnYellow" class="active">Turn On Yellow (R or G is 0)</button>
 
-        <!-- Speed -->
-        <input type="range" id="speed" class="speed-slider" min="0" max="1" step="0.001" value="1" title="Speed">
+            <!-- Min Brightness -->
+            <input type="range" id="minBright" class="bright-slider" min="0" max="127" value="64" title="Minimum Brightness">
+
+            <!-- Speed -->
+            <input type="range" id="speed" class="speed-slider" min="0" max="1" step="0.001" value="1" title="Speed">
+        </div>
     </div>
 
     <canvas id="noiseCanvas"></canvas>
@@ -180,7 +211,6 @@
 
                 minBrightness = parseInt(inputs.bright.value);
                 
-                // Adjust speed calculation so it feels consistent on small vs large screens
                 const minSpeed = 500;
                 const maxSpeed = ((width * height) / 60) * 2; 
                 targetPixelsPerFrame = minSpeed + (parseFloat(inputs.speed.value) * (maxSpeed - minSpeed));
