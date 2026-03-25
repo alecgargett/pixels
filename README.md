@@ -1,5 +1,5 @@
-# pixels
+# Personal website
 
-An interactive colourful pixels animation.
+My personal website
 
-https://alecgargett.github.io/pixels/
+https://alecgargett.github.io/website/
